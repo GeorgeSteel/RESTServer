@@ -13,7 +13,9 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "mongoose": "^5.4.12",
+    "mongoose-unique-validator": "^2.0.2"
   },
   "devDependencies": {
     "nodemon": "^1.18.10"
