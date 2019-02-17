@@ -1,9 +1,34 @@
 const express = require('express');
 const app = express();
 const UserSchema = require('../models/user');
+const bcrypt = require('bcrypt');
+const _ = require('underscore');
 
 app.get('/usuario', (req, res) => {
-    res.json('getUsuario');
+    let from = req.query.from || 0;
+    from = Number(from);
+    let limit = req.query.limit || 10;
+    limit = Number(limit);
+
+    UserSchema.find({status:true}, 'name email role status google')
+              .skip(from)
+              .limit(limit)
+              .exec((err, users) => {
+                if (err) {
+                    return res.status(400).json({
+                        ok: false,
+                        err
+                    });
+                }
+
+                UserSchema.count({status:true}, (err, count) => {
+                    res.json({
+                        ok: true,
+                        users,
+                        count
+                    });
+                });                
+              });
 });
 
 app.post('/usuario', (req, res) => {
@@ -12,13 +37,34 @@ app.post('/usuario', (req, res) => {
     let user = new UserSchema({
         name: body.name,
         email: body.email,
-        password: body.password,
+        password: bcrypt.hashSync(body.password, 10),
         role: body.role
     });
 
     user.save((err, userDB) => {
         if (err) {
-            res.status(400).json({
+            return res.status(400).json({
+                ok: false,
+                err
+            });
+        }
+
+        // userDB.password = null;
+
+        res.json({
+            ok: true,
+            user: userDB
+        });
+    });
+});
+
+app.put('/usuario/:id', (req, res) => {
+    let id = req.params.id;
+    let body = _.pick(req.body, ['name', 'email', 'img', 'role', 'status']);
+
+    UserSchema.findByIdAndUpdate(id, body, {new: true, runValidators: true},(err, userDB) => {
+        if (err) {
+            return res.status(400).json({
                 ok: false,
                 err
             });
@@ -28,29 +74,55 @@ app.post('/usuario', (req, res) => {
             ok: true,
             user: userDB
         });
+
     });
 
-    // if (body.name === undefined) {
-    //     res.status(400).json({
-    //         ok: false,
-    //         msg: 'The name is required'
-    //     })
-    // }else {
-    //     res.json({
-    //         person: body
-    //     });
-    // }    
 });
 
-app.put('/usuario/:id', (req, res) => {
+app.delete('/usuario/:id', (req, res) => {
     let id = req.params.id;
-    res.json({
-        id
-    });
-});
 
-app.delete('/usuario', (req, res) => {
-    res.json('deleteUsuario');
+    UserSchema.findByIdAndUpdate(id, {status:false}, {new: true},(err, deleteUser) => {
+        if (err) {
+            return  res.status(400).json({
+                ok: false,
+                err
+            });
+        }
+
+        if (!deleteUser) {
+            return res.status(400).json({
+                ok: false,
+                err: {message: `User don't finded`}
+            });
+        }
+
+        res.json({
+            ok: true,
+            user: deleteUser
+        });
+    });
+
+    // UserSchema.findByIdAndRemove(id, (err, deleteUser) => {
+    //     if (err) {
+    //         res.status(400).json({
+    //             ok: false,
+    //             err
+    //         });
+    //     }
+
+    //     if (!deleteUser) {
+    //         res.status(400).json({
+    //             ok: false,
+    //             err: {message: `User don't finded`}
+    //         });
+    //     }
+
+    //     res.json({
+    //         ok:true,
+    //         user:deleteUser
+    //     });
+    // });
 });
 
 module.exports = app;
