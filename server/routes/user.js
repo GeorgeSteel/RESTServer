@@ -3,8 +3,9 @@ const app = express();
 const UserSchema = require('../models/user');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
+const { checkToken, checkRole } = require('../middlewares/authentication');
 
-app.get('/usuario', (req, res) => {
+app.get('/usuario', checkToken, (req, res) => {
     let from = req.query.from || 0;
     from = Number(from);
     let limit = req.query.limit || 10;
@@ -31,7 +32,7 @@ app.get('/usuario', (req, res) => {
               });
 });
 
-app.post('/usuario', (req, res) => {
+app.post('/usuario', [checkToken, checkRole], (req, res) => {
     let body = req.body;
 
     let user = new UserSchema({
@@ -58,7 +59,7 @@ app.post('/usuario', (req, res) => {
     });
 });
 
-app.put('/usuario/:id', (req, res) => {
+app.put('/usuario/:id', [checkToken, checkRole], (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['name', 'email', 'img', 'role', 'status']);
 
@@ -79,7 +80,7 @@ app.put('/usuario/:id', (req, res) => {
 
 });
 
-app.delete('/usuario/:id', (req, res) => {
+app.delete('/usuario/:id', [checkToken, checkRole], (req, res) => {
     let id = req.params.id;
 
     UserSchema.findByIdAndUpdate(id, {status:false}, {new: true},(err, deleteUser) => {
