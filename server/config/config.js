@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'dev') {
 process.env.URLDB = urlDB;
 
 // Tokes expires
-process.env.TOKEN_EXPIRES = 60*60*24*30;
+process.env.TOKEN_EXPIRES = '24h';
 
 // Authentication SEED
 process.env.SEED = process.env.SEED || 'este-es-el-seed-desarrollo';
