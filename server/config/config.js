@@ -20,3 +20,6 @@ process.env.TOKEN_EXPIRES = '24h';
 
 // Authentication SEED
 process.env.SEED = process.env.SEED || 'este-es-el-seed-desarrollo';
+
+// Google Client ID
+process.env.CLIENT_ID = process.env.CLIENT_ID || '876030848337-uou9urkqt70q0vvkliquig6rctprl81l.apps.googleusercontent.com';
